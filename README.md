@@ -9,6 +9,26 @@
 
 Study tracker and timer with analytics.
 
+## Ethos
+
+![Cybersyn Control Center](data/CyberSyn-render-005.png)
+
+Cybersyn control center for your study logistics. Zen minimalism meets hacker pragmatism. System notifications, local data, terminal control. Focus is the feature.
+
+## System Requirements
+
+- Python 3.12+
+- Linux (uses notify-send and xdg-open)
+- uv package manager
+
+## Tech Stack
+
+- CLI: Typer
+- Database: SQLite + SQLAlchemy
+- Data: Pydantic models
+- Analytics: Pandas + Matplotlib
+- Notifications: libnotify (notify-send)
+
 ## Setup
 
 ```bash
