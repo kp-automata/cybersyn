@@ -15,6 +15,10 @@ Study tracker and timer with analytics.
 
 Cybersyn control center for your study logistics. Zen minimalism meets hacker pragmatism. System notifications, local data, terminal control. Focus is the feature.
 
+## Note
+
+Personal project built for my own study tracking needs. Open sourced as a jumping-off point for anyone who wants a minimal, terminal-based study timer.
+
 ## System Requirements
 
 - Python 3.12+
@@ -84,6 +88,15 @@ cybersyn config --long-break 20 --sessions 3
 cybersyn list
 cybersyn list --limit 20
 ```
+
+### Delete Sessions
+
+```bash
+cybersyn delete <session_id>
+cybersyn delete <session_id> --force
+```
+
+Permanently delete a session. Shows session details and asks for confirmation (skip with `--force`). Use `cybersyn list` to find session IDs.
 
 ### Statistics
 
