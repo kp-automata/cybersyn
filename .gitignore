@@ -11,3 +11,8 @@ wheels/
 
 # Agent/AI working directory
 agent/
+
+# User data
+data/*.db
+data/*.json
+data/charts/*.png
