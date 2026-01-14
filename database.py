@@ -59,6 +59,18 @@ def update_session(session_id: int, **kwargs) -> None:
     db.close()
 
 
+def delete_session(session_id: int) -> bool:
+    db = Session()
+    db_session = db.query(SessionDB).filter(SessionDB.id == session_id).first()
+    if db_session:
+        db.delete(db_session)
+        db.commit()
+        db.close()
+        return True
+    db.close()
+    return False
+
+
 def get_session(session_id: int) -> StudySession | None:
     db = Session()
     db_session = db.query(SessionDB).filter(SessionDB.id == session_id).first()

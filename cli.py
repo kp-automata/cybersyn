@@ -10,7 +10,7 @@ from timer import (
     stop_session,
     get_current_status,
 )
-from database import get_session, get_all_sessions
+from database import get_session, get_all_sessions, delete_session
 from notify import (
     notify_session_started,
     notify_session_paused,
@@ -187,6 +187,42 @@ def list(limit: int = typer.Option(10, "--limit", "-n", help="Number of sessions
         category_str = s.category[:13] + ".." if len(s.category) > 15 else s.category
         duration_str = format_duration(s.duration_seconds)
         typer.echo(f"{s.id:<5} {date_str:<12} {task_str:<30} {category_str:<15} {duration_str:<10} {s.mode:<10}")
+
+
+@app.command()
+def delete(
+    session_id: int = typer.Argument(..., help="Session ID to delete"),
+    force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation prompt"),
+):
+    """Delete a session permanently"""
+    session = get_session(session_id)
+
+    if not session:
+        typer.echo(f"Error: Session {session_id} not found", err=True)
+        raise typer.Exit(1)
+
+    # Show session details
+    typer.echo(f"\nSession to delete:")
+    typer.echo(f"  ID: {session.id}")
+    typer.echo(f"  Task: {session.task}")
+    typer.echo(f"  Category: {session.category}")
+    typer.echo(f"  Date: {session.start_time.strftime('%Y-%m-%d %H:%M:%S')}")
+    typer.echo(f"  Duration: {format_duration(session.duration_seconds)}")
+    typer.echo(f"  Mode: {session.mode}")
+
+    # Confirmation prompt
+    if not force:
+        confirm = typer.confirm("\nAre you sure you want to delete this session permanently?")
+        if not confirm:
+            typer.echo("Deletion cancelled")
+            return
+
+    # Delete the session
+    if delete_session(session_id):
+        typer.echo(f"\nSession {session_id} deleted successfully")
+    else:
+        typer.echo(f"Error: Failed to delete session {session_id}", err=True)
+        raise typer.Exit(1)
 
 
 @app.command()
