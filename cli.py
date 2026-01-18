@@ -1,6 +1,7 @@
 import typer
 import time
 import subprocess
+from datetime import datetime, timedelta
 from typing import Optional
 from pathlib import Path
 from timer import (
@@ -10,7 +11,8 @@ from timer import (
     stop_session,
     get_current_status,
 )
-from database import get_session, get_all_sessions, delete_session
+from database import get_session, get_all_sessions, delete_session, save_session
+from models import StudySession
 from notify import (
     notify_session_started,
     notify_session_paused,
@@ -86,7 +88,7 @@ def start(
                 time.sleep(1)
         except KeyboardInterrupt:
             typer.echo("\n\nTimer detached. Session still running in background.")
-            typer.echo("Use 'status' to check, 'pause' to pause, or 'stop' to end.")
+            typer.echo("Use 'cybersyn status' to check, 'cybersyn pause' to pause, or 'cybersyn stop' to end.")
 
     except RuntimeError as e:
         typer.echo(f"Error: {e}", err=True)
@@ -101,6 +103,7 @@ def pause():
         duration_str = format_duration(elapsed)
         notify_session_paused(duration_str)
         typer.echo(f"Timer paused at {duration_str}")
+        typer.echo("Use 'cybersyn resume' to continue, or 'cybersyn stop' to end session.")
     except RuntimeError as e:
         typer.echo(f"Error: {e}", err=True)
         raise typer.Exit(1)
@@ -319,6 +322,57 @@ def export(output: str = typer.Argument("sessions.csv")):
             ])
 
     typer.echo(f"Exported {len(sessions)} sessions to {output}")
+
+
+@app.command()
+def add(
+    task: str,
+    category: str = typer.Option(..., "--category", "-c", help="Study category/class"),
+    week: int = typer.Option(..., "--week", "-w", help="School week number"),
+    duration: int = typer.Option(..., "--duration", "-d", help="Duration in minutes"),
+    date: Optional[str] = typer.Option(None, "--date", help="Date in YYYY-MM-DD format (defaults to today)"),
+    mode: str = typer.Option("manual", "--mode", "-m", help="Mode type"),
+):
+    """Manually add a completed study session"""
+    if duration <= 0:
+        typer.echo("Error: Duration must be greater than 0", err=True)
+        raise typer.Exit(1)
+
+    if date:
+        try:
+            session_date = datetime.strptime(date, "%Y-%m-%d")
+        except ValueError:
+            typer.echo("Error: Date must be in YYYY-MM-DD format", err=True)
+            raise typer.Exit(1)
+
+        if session_date.date() > datetime.now().date():
+            typer.echo("Error: Date cannot be in the future", err=True)
+            raise typer.Exit(1)
+    else:
+        session_date = datetime.now()
+
+    start_time = session_date.replace(hour=12, minute=0, second=0, microsecond=0)
+    duration_seconds = duration * 60
+    end_time = start_time + timedelta(seconds=duration_seconds)
+
+    session = StudySession(
+        task=task,
+        category=category,
+        start_time=start_time,
+        end_time=end_time,
+        duration_seconds=duration_seconds,
+        mode=mode,
+        school_week=week,
+    )
+
+    session_id = save_session(session)
+
+    typer.echo(f"Added session #{session_id}")
+    typer.echo(f"Task: {task}")
+    typer.echo(f"Category: {category} | Week: {week}")
+    typer.echo(f"Date: {start_time.strftime('%Y-%m-%d')}")
+    typer.echo(f"Duration: {format_duration(duration_seconds)}")
+    typer.echo(f"Mode: {mode}")
 
 
 @app.command()
