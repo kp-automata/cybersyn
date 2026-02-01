@@ -31,7 +31,7 @@ def generate_time_series(sessions: list[StudySession]) -> Path:
     ax.plot(dates, hours, marker='o', linewidth=2, markersize=6)
     ax.set_xlabel('Date')
     ax.set_ylabel('Hours')
-    ax.set_title('Study Time Over Time')
+    ax.set_title('Study Sessions Over Time')
     ax.grid(True, alpha=0.3)
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=45, ha='right')
@@ -53,12 +53,31 @@ def generate_category_breakdown(sessions: list[StudySession]) -> Path:
 
     categories = list(by_category.keys())
     hours = list(by_category.values())
+    total_hours = sum(hours)
+
+    sorted_data = sorted(zip(categories, hours), key=lambda x: x[1], reverse=True)
+    categories, hours = zip(*sorted_data)
+
+    colors = ['#2E86AB', '#A23B72', '#F18F01', '#06A77D', '#C73E1D', '#6A4C93', '#E63946', '#06FFA5']
+    bar_colors = [colors[i % len(colors)] for i in range(len(categories))]
+
+    min_date = min(s.start_time.date() for s in sessions)
+    max_date = max(s.start_time.date() for s in sessions)
+    date_range = f"{min_date.strftime('%b %d')} - {max_date.strftime('%b %d, %Y')}"
 
     fig, ax = plt.subplots(figsize=(10, 6))
-    bars = ax.bar(categories, hours)
+    bars = ax.bar(categories, hours, color=bar_colors, alpha=0.8, edgecolor='black', linewidth=1.2)
+
+    for bar in bars:
+        height = bar.get_height()
+        percentage = (height / total_hours) * 100
+        ax.text(bar.get_x() + bar.get_width() / 2., height,
+               f'({percentage:.0f}%)',
+               ha='center', va='bottom', fontsize=9)
+
     ax.set_xlabel('Category')
     ax.set_ylabel('Hours')
-    ax.set_title('Study Time by Category')
+    ax.set_title(f'Study Time by Category: {date_range}')
     ax.grid(True, alpha=0.3, axis='y')
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
