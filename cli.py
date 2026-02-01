@@ -254,7 +254,9 @@ def stats(
 
 
 @app.command()
-def charts():
+def charts(
+    dashboard: bool = typer.Option(False, "--dashboard", "-d", help="Generate dashboard view only")
+):
     """Generate visualization charts"""
     sessions = get_all_sessions()
 
@@ -262,11 +264,15 @@ def charts():
         typer.echo("No sessions found")
         return
 
-    typer.echo("Generating charts...")
-    chart_files = generate_all_charts(sessions)
+    if dashboard:
+        typer.echo("Generating dashboard...")
+    else:
+        typer.echo("Generating charts...")
+
+    chart_files = generate_all_charts(sessions, dashboard_only=dashboard)
 
     if chart_files:
-        typer.echo(f"\nGenerated {len(chart_files)} charts:")
+        typer.echo(f"\nGenerated {len(chart_files)} chart{'s' if len(chart_files) > 1 else ''}:")
         for chart in chart_files:
             typer.echo(f"  {chart}")
     else:
