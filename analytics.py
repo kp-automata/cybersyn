@@ -140,6 +140,35 @@ def generate_heatmap(sessions: list[StudySession]) -> Path:
     return output
 
 
+def generate_time_of_day(sessions: list[StudySession]) -> Path:
+    by_hour = defaultdict(int)
+    for s in sessions:
+        hour = s.start_time.hour
+        by_hour[hour] += s.duration_seconds / 3600
+
+    if not by_hour:
+        return None
+
+    hours = list(range(24))
+    values = [by_hour.get(h, 0) for h in hours]
+
+    fig, ax = plt.subplots(figsize=(12, 6))
+    bars = ax.bar(hours, values, color='#06A77D', alpha=0.8, edgecolor='black', linewidth=1)
+
+    ax.set_xlabel('Hour of Day')
+    ax.set_ylabel('Total Hours Studied')
+    ax.set_title('Study Time by Hour of Day')
+    ax.set_xticks(range(0, 24, 2))
+    ax.set_xticklabels([f'{h:02d}:00' for h in range(0, 24, 2)])
+    ax.grid(True, alpha=0.3, axis='y')
+    plt.tight_layout()
+
+    output = CHARTS_DIR / f"time_of_day_{get_timestamp()}.png"
+    plt.savefig(output, dpi=150)
+    plt.close()
+    return output
+
+
 def generate_all_charts(sessions: list[StudySession]) -> list[Path]:
     charts = []
 
@@ -152,6 +181,10 @@ def generate_all_charts(sessions: list[StudySession]) -> list[Path]:
         charts.append(chart)
 
     chart = generate_heatmap(sessions)
+    if chart:
+        charts.append(chart)
+
+    chart = generate_time_of_day(sessions)
     if chart:
         charts.append(chart)
 
