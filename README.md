@@ -7,30 +7,26 @@
      /____/                     /____/
 ```
 
-Study tracker and timer with analytics.
+CLI study tracker and timer with analytics. Track your sessions, visualize your progress.
 
-## Ethos
+![Cybersyn Dashboard](data/dashboard_example.png)
 
-![Cybersyn Control Center](data/CyberSyn-render-005.png)
+## Philosophy
 
-Cybersyn control center for your study logistics. Zen minimalism meets hacker pragmatism. System notifications, local data, terminal control. Focus is the feature.
+Terminal level control, system notifications, local data. Focus is the feature.
 
-## Note
-
-Personal project built for my own study tracking needs. Open sourced as a jumping-off point for anyone who wants a minimal, terminal-based study timer.
-
-## System Requirements
+## Requirements
 
 - Python 3.12+
-- Linux (uses notify-send and xdg-open)
-- uv package manager
+- Linux (uses `notify-send` and `xdg-open`)
+- [uv](https://github.com/astral-sh/uv) package manager
 
 ## Tech Stack
 
 - CLI: Typer
 - Database: SQLite + SQLAlchemy
 - Data: Pydantic models
-- Analytics: Pandas + Matplotlib
+- Analytics: Matplotlib + NumPy
 - Notifications: libnotify (notify-send)
 
 ## Setup
@@ -111,10 +107,26 @@ Shows session count, total time, breakdown by category.
 
 ```bash
 cybersyn charts
+cybersyn charts --dashboard
 cybersyn show
 ```
 
-Generates time series, category breakdown, and heat map calendar.
+Generates 4 visualizations:
+- Time series with trend line
+- Category breakdown with percentages
+- Activity heatmap
+- Time-of-day analysis
+
+Dashboard flag generates a single combined view.
+
+### Add Historical Sessions
+
+```bash
+cybersyn add "Past study session" --category "Math" --week 1 --duration 120
+cybersyn add "Session from yesterday" -c "Physics" -w 2 -d 90 --date 2026-01-31
+```
+
+Manually add completed sessions. Duration in minutes, date defaults to today.
 
 ### Export
 
@@ -122,17 +134,6 @@ Generates time series, category breakdown, and heat map calendar.
 cybersyn export
 cybersyn export backup.csv
 ```
-
-## Features
-
-- Stopwatch and Pomodoro modes
-- Pause/resume functionality
-- System notifications (notify-send)
-- Session persistence (survives crashes)
-- Live timer display
-- SQLite storage
-- Analytics and visualizations
-- CSV export
 
 ## Data
 
