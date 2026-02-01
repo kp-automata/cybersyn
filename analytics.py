@@ -5,6 +5,7 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+import numpy as np
 from models import StudySession
 
 CHARTS_DIR = Path(__file__).parent / "data" / "charts"
@@ -28,11 +29,19 @@ def generate_time_series(sessions: list[StudySession]) -> Path:
     hours = [by_date[d] for d in dates]
 
     fig, ax = plt.subplots(figsize=(12, 6))
-    ax.plot(dates, hours, marker='o', linewidth=2, markersize=6)
+    ax.plot(dates, hours, marker='o', linewidth=2, markersize=6, label='Daily Hours', color='#2E86AB')
+
+    if len(dates) >= 3:
+        x_numeric = np.arange(len(dates))
+        z = np.polyfit(x_numeric, hours, 1)
+        p = np.poly1d(z)
+        ax.plot(dates, p(x_numeric), "--", linewidth=2, label='Trend', color='#C73E1D', alpha=0.7)
+
     ax.set_xlabel('Date')
     ax.set_ylabel('Hours')
     ax.set_title('Study Sessions Over Time')
     ax.grid(True, alpha=0.3)
+    ax.legend(loc='best')
     ax.xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d'))
     plt.xticks(rotation=45, ha='right')
     plt.tight_layout()
