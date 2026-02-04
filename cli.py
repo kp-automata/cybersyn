@@ -29,7 +29,6 @@ from config import load_config, save_config
 
 app = typer.Typer(help="Cybersyn - Study tracker and timer")
 
-
 def format_duration(seconds: int) -> str:
     hours = seconds // 3600
     minutes = (seconds % 3600) // 60
@@ -232,7 +231,7 @@ def delete(
 def stats(
     days: Optional[int] = typer.Option(None, "--days", "-d", help="Limit to last N days"),
 ):
-    """Show study statistics"""
+    """Display study statistics"""
     sessions = get_all_sessions()
 
     if not sessions:
@@ -292,6 +291,13 @@ def show():
 
     if not chart_files:
         typer.echo("No charts found. Run 'cybersyn charts' first.")
+        return
+
+    # If we just generated a dashboard we don't want to
+    # see the latest 3 chart files. Give us just the dashboard. 
+    if "dashboard" in chart_files[0].name:
+        typer.echo(f"Opening latest dashboard file...")
+        subprocess.run(["xdg-open", str(chart_files[0])])
         return
 
     typer.echo(f"Opening {len(chart_files[:3])} most recent charts...")
